@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: briseyda.arbizu
+
+  data:
+    mongodb:
+      database: 01_briseyda_Arbizu
+      uri: mongodb+srv://briseyda:bonitabris20@cluster0.lwskqzr.mongodb.net/?appName=Cluster0
+api:
+  rapidapi:
+    key: 7d690ba7c7msha7c476d361fca07p130e42jsn4aa2e06fd70f
+  background-remover:
+    url: https://ai-background-remover.p.rapidapi.com/image/matte/v1
+    host: ai-background-remover.p.rapidapi.com
+  photo-to-anime:
+    url: https://phototoanime1.p.rapidapi.com/cartoonize
+    host: phototoanime1.p.rapidapi.com
