@@ -2,19 +2,22 @@ package apis.briseyda.arbizu.rest;
 
 import apis.briseyda.arbizu.model.ApiModel;
 import apis.briseyda.arbizu.service.ApiService;
-import lombok.RequiredArgsConstructor; // Agrega esta dependencia en tu pom.xml si no la tienes
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux; // Importante para devolver listas reactivas
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/ia")
-@RequiredArgsConstructor // Esto genera el constructor automáticamente
+@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ApiRest {
 
     private final ApiService apiService;
+
+    // --- MÉTODOS EXISTENTES ---
 
     @PostMapping(value = "/remover-fondo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.IMAGE_PNG_VALUE)
     public Mono<byte[]> remover(@RequestPart("file") FilePart file) {
@@ -24,5 +27,19 @@ public class ApiRest {
     @PostMapping("/convertir-anime")
     public Mono<ApiModel> anime(@RequestParam("url") String url) {
         return apiService.convertirAnime(url);
+    }
+
+    // --- NUEVO MÉTODO PARA VISUALIZAR ---
+
+    @GetMapping(value = "/listar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<ApiModel> listarTodo() {
+        return apiService.findAll(); // Este método debe estar definido en tu Service
+    }
+
+    // Este método es para que el navegador PUEDA MOSTRAR la imagen al hacer clic
+    @GetMapping(value = "/ver-imagen/{id}", produces = MediaType.IMAGE_PNG_VALUE)
+    public Mono<byte[]> verImagen(@PathVariable String id) {
+        return apiService.findById(id)
+                .map(ApiModel::getImagenBinaria); // Aquí obtienes los bytes guardados
     }
 }

@@ -1,0 +1,6 @@
+# kubectl create namespace briseyda-arbizu-01-namespace (COMANDO)
+# kubectl apply -f briseyda-arbizu-01-namespace.yml (yml)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: briseyda-arbizu-01-namespace

@@ -1,0 +1,23 @@
+# kubectl apply -f briseyda-arbizu-01-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: briseyda-arbizu-01-deployment
+  namespace: briseyda-arbizu-01-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: briseyda-arbizu-01-deployment        # Debe coincidir con las etiquetas del Service
+  template:
+    metadata:
+      labels:
+        app: briseyda-arbizu-01-deployment      # Debe coincidir con las etiquetas del Service
+    spec:
+      containers:
+      - name: briseyda-arbizu-01-container
+        image: briseydaarbizu/ia-image-processor   # Reemplaza con tu imagen Docker Hub
+        imagePullPolicy: IfNotPresent        # Evitar traer siempre la última versión si hay una actual
+        envFrom:
+        - secretRef:
+            name: briseyda-arbizu-01-secret  # Esto cargará todos los valores como variables de entorno

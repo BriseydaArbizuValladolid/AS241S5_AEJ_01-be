@@ -1,20 +1,21 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
 
 spring:
   application:
-    name: briseyda.arbizu
-
+    name: briseyda-arbizu
   data:
     mongodb:
-      database: 01_briseyda_Arbizu
-      uri: mongodb+srv://briseyda:bonitabris20@cluster0.lwskqzr.mongodb.net/?appName=Cluster0
+      # Si MONGO_URI no existe, usa la URL de Atlas por defecto
+      uri: ${MONGO_URI:mongodb+srv://briseyda:bonitabris20@cluster0.lwskqzr.mongodb.net/?appName=Cluster0}
+      database: ${MONGO_DATABASE:01_briseyda_Arbizu}
+
 api:
   rapidapi:
-    key: 7d690ba7c7msha7c476d361fca07p130e42jsn4aa2e06fd70f
+    key: ${RAPIDAPI_KEY:7d690ba7c7msha7c476d361fca07p130e42jsn4aa2e06fd70f}
   background-remover:
-    url: https://ai-background-remover.p.rapidapi.com/image/matte/v1
-    host: ai-background-remover.p.rapidapi.com
+    url: ${BACK_REMOVER_URL:https://ai-background-remover.p.rapidapi.com/image/matte/v1}
+    host: ${BACK_REMOVER_HOST:ai-background-remover.p.rapidapi.com}
   photo-to-anime:
-    url: https://phototoanime1.p.rapidapi.com/cartoonize
-    host: phototoanime1.p.rapidapi.com
+    url: ${PHOTO_ANIME_URL:https://phototoanime1.p.rapidapi.com/cartoonize}
+    host: ${PHOTO_ANIME_HOST:phototoanime1.p.rapidapi.com}
