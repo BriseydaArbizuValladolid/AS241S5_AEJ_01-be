@@ -1,5 +1,6 @@
 server:
-  port: ${PORT:8081}
+  port: ${PORT}
+  server: ${SERVER_URL}
 
 spring:
   application:
@@ -7,15 +8,15 @@ spring:
   data:
     mongodb:
       # Si MONGO_URI no existe, usa la URL de Atlas por defecto
-      uri: ${MONGO_URI:mongodb+srv://briseyda:bonitabris20@cluster0.lwskqzr.mongodb.net/?appName=Cluster0}
-      database: ${MONGO_DATABASE:01_briseyda_Arbizu}
+      uri: ${DATABASE_URL}
+      database: ${DATABASE_USERNAME}
 
 api:
   rapidapi:
-    key: ${RAPIDAPI_KEY:7d690ba7c7msha7c476d361fca07p130e42jsn4aa2e06fd70f}
+    key: ${RAPIDAPI_APIKEY}
   background-remover:
-    url: ${BACK_REMOVER_URL:https://ai-background-remover.p.rapidapi.com/image/matte/v1}
-    host: ${BACK_REMOVER_HOST:ai-background-remover.p.rapidapi.com}
+    url: ${BACK_REMOVER_URL}
+    host: ${BACK_REMOVER_HOST}
   photo-to-anime:
-    url: ${PHOTO_ANIME_URL:https://phototoanime1.p.rapidapi.com/cartoonize}
-    host: ${PHOTO_ANIME_HOST:phototoanime1.p.rapidapi.com}
+    url: ${PHOTO_ANIME_URL}
+    host: ${PHOTO_ANIME_HOST}
