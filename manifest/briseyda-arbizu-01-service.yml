@@ -1,0 +1,14 @@
+# kubectl apply -f briseyda-arbizu-01-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: briseyda-arbizu-01-service
+  namespace: briseyda-arbizu-01-namespace
+spec:
+  type: NodePort      #30000-32767  # Cambia a LoadBalancer si estás en un entorno de nube
+  ports:
+  - port: 30001       # Puerto que el Service expondrá
+    targetPort: 8085  # Puerto en el contenedor donde tu aplicación escucha
+    nodePort: 30001   # Puerto asignado en el nodo, opcional
+  selector:
+    app: briseyda-arbizu-01-deployment  # Debe coincidir con las etiquetas del Deployment
