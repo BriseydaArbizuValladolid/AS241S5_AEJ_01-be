@@ -35,17 +35,15 @@ public class ApiImpl implements ApiService {
     @Override
     public Flux<ApiModel> findAll() {
         return repository.findAll().map(img -> {
-            // Resultado (Fondo removido o Anime)
+            // Mantenemos tu urlResultado actual
             img.setUrlResultado("/api/v1/ia/ver-imagen/" + img.getId());
 
-            // Imagen Original
+            // CAMBIO CLAVE: Hacemos que urlOriginal use la misma lógica de ruta
             if ("BACKGROUND_REMOVER".equals(img.getTipoServicio())) {
-                // Generamos la ruta que apunta a tu controlador
                 img.setUrlOriginal("/api/v1/ia/ver-imagen-original/" + img.getId());
             }
-            // Para PHOTO_TO_ANIME la urlOriginal ya es un link de internet, no la tocamos.
 
-            // Limpiamos binarios para que no pese el JSON
+            // Limpiamos para que el JSON sea ligero
             img.setImagenBinaria(null);
             img.setImagenOriginalBinaria(null);
             return img;
@@ -77,14 +75,13 @@ public class ApiImpl implements ApiService {
                             .retrieve()
                             .bodyToMono(byte[].class)
                             .flatMap(bytesProcesados -> {
-                                // Creamos el registro con los dos binarios
                                 ApiModel registro = new ApiModel();
                                 registro.setTipoServicio("BACKGROUND_REMOVER");
-                                registro.setUrlOriginal(filePart.filename()); // Nombre temporal
+                                // Aquí guardamos los bytes para que existan en la BD
                                 registro.setImagenBinaria(bytesProcesados);
                                 registro.setImagenOriginalBinaria(bytesOriginales);
 
-                                // Guardamos y nos aseguramos de retornar los bytes procesados al terminar
+                                // Guardamos y retornamos los bytes para que la web no de error
                                 return repository.save(registro)
                                         .thenReturn(bytesProcesados);
                             });
