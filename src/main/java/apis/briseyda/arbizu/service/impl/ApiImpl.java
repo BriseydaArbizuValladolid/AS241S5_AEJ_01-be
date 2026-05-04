@@ -35,15 +35,12 @@ public class ApiImpl implements ApiService {
     @Override
     public Flux<ApiModel> findAll() {
         return repository.findAll().map(img -> {
-            // Mantenemos tu urlResultado actual
             img.setUrlResultado("/api/v1/ia/ver-imagen/" + img.getId());
 
-            // CAMBIO CLAVE: Hacemos que urlOriginal use la misma lógica de ruta
             if ("BACKGROUND_REMOVER".equals(img.getTipoServicio())) {
                 img.setUrlOriginal("/api/v1/ia/ver-imagen-original/" + img.getId());
             }
 
-            // Limpiamos para que el JSON sea ligero
             img.setImagenBinaria(null);
             img.setImagenOriginalBinaria(null);
             return img;
@@ -52,6 +49,11 @@ public class ApiImpl implements ApiService {
 
     public Mono<ApiModel> findById(String id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public Mono<ApiModel> save(ApiModel apiModel) {
+        return repository.save(apiModel);
     }
 
     // --- MÉTODO PARA REMOVER FONDO ---

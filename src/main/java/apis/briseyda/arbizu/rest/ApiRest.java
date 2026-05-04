@@ -43,16 +43,28 @@ public class ApiRest {
     }
 
     // --- MÉTODO PARA EDITAR (UPDATE) ---
-    @PutMapping("/actualizar/{id}")
-    public Mono<ApiModel> actualizar(@PathVariable String id, @RequestBody ApiModel data) {
-        return apiService.update(id, data);
+    @PutMapping("/editar/{id}")
+    public Mono<ApiModel> editar(@PathVariable String id, @RequestBody ApiModel registroActualizado) {
+        return apiService.findById(id)
+                .flatMap(itemExistente -> {
+                    // Actualizamos los campos que vienen del frontend
+                    itemExistente.setUrlOriginal(registroActualizado.getUrlOriginal());
+                    itemExistente.setTipoServicio(registroActualizado.getTipoServicio());
+                    // Si quieres "restaurarlo" al editar, podrías limpiar el _ELIMINADO aquí
+                    return apiService.save(itemExistente);
+                });
     }
 
     // --- MÉTODO PARA ELIMINADO LÓGICO (DELETE) ---
-    // Usamos DELETE porque es la semántica de la acción,
-    // pero el Service se encargará de que solo cambie el estado.
-    @DeleteMapping("/eliminar/{id}")
-    public Mono<ApiModel> deleteLogico(@PathVariable String id) {
-        return apiService.deleteLogico(id);
+    @PatchMapping("/eliminar/{id}")
+    public Mono<ApiModel> eliminar(@PathVariable String id) {
+        return apiService.findById(id)
+                .flatMap(existente -> {
+                    // Si el servicio no termina en _ELIMINADO, se lo agregamos
+                    if (!existente.getTipoServicio().endsWith("_ELIMINADO")) {
+                        existente.setTipoServicio(existente.getTipoServicio() + "_ELIMINADO");
+                    }
+                    return apiService.save(existente);
+                });
     }
 }

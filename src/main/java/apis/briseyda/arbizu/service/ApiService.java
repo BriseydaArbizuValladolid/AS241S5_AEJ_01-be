@@ -20,5 +20,7 @@ public interface ApiService {
 
     // --- ELIMINADO LOGICO ---
     Mono<ApiModel> deleteLogico(String id);
+    
+    Mono<ApiModel> save(ApiModel apiModel);
 
 }
