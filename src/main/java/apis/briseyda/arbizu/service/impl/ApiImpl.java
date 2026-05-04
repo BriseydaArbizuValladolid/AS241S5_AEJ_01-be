@@ -127,4 +127,23 @@ public class ApiImpl implements ApiService {
                     return repository.save(img); // Guarda en Mongo
                 });
     }
+
+    @Override
+    public Mono<ApiModel> update(String id, ApiModel apiModel) {
+        return repository.findById(id)
+                .flatMap(existing -> {
+                    existing.setTipoServicio(apiModel.getTipoServicio());
+                    // actualiza otros campos si es necesario
+                    return repository.save(existing);
+                });
+    }
+
+    @Override
+    public Mono<ApiModel> deleteLogico(String id) {
+        return repository.findById(id)
+                .flatMap(item -> {
+                    item.setActivo(false);
+                    return repository.save(item);
+                });
+    }
 }

@@ -19,4 +19,5 @@ public class ApiModel {
     private byte[] imagenBinaria;
     private String tipoServicio; // Ejemplo: "BACKGROUND_REMOVER" o "PHOTO_TO_ANIME"
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+    private boolean activo = true;
 }

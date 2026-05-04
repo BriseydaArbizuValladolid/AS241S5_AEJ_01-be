@@ -10,6 +10,15 @@ import reactor.core.publisher.Mono;
 public interface ApiService {
     Mono<byte[]> removerFondoConArchivo(FilePart filePart);
     Mono<ApiModel> convertirAnime(String url);
+
+    // --- LISTAR ---
     Flux<ApiModel> findAll();
     Mono<ApiModel> findById(String id);
+
+    // --- EDITAR ---
+    Mono<ApiModel> update(String id, ApiModel apiModel);
+
+    // --- ELIMINADO LOGICO ---
+    Mono<ApiModel> deleteLogico(String id);
+
 }
