@@ -17,7 +17,10 @@ public class ApiModel {
     private String urlOriginal;
     private String urlResultado;
     private byte[] imagenBinaria;
+    private byte[] imagenOriginalBinaria; //Para la imagen original
     private String tipoServicio; // Ejemplo: "BACKGROUND_REMOVER" o "PHOTO_TO_ANIME"
     private LocalDateTime fechaCreacion = LocalDateTime.now();
     private boolean activo = true;
+
 }
+

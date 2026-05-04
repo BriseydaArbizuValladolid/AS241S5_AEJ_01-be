@@ -35,18 +35,19 @@ public class ApiImpl implements ApiService {
     @Override
     public Flux<ApiModel> findAll() {
         return repository.findAll().map(img -> {
-            // 1. SOLO si el servicio es de remover fondo, aplicamos la URL corta
+            // Resultado (Fondo removido o Anime)
+            img.setUrlResultado("/api/v1/ia/ver-imagen/" + img.getId());
+
+            // Imagen Original
             if ("BACKGROUND_REMOVER".equals(img.getTipoServicio())) {
-                String urlCorta = "/api/v1/ia/ver-imagen/" + img.getId();
-                img.setUrlResultado(urlCorta);
-
-                // Limpiamos el binario para que no pese en el JSON
-                img.setImagenBinaria(null);
+                // Generamos la ruta que apunta a tu controlador
+                img.setUrlOriginal("/api/v1/ia/ver-imagen-original/" + img.getId());
             }
+            // Para PHOTO_TO_ANIME la urlOriginal ya es un link de internet, no la tocamos.
 
-            // 2. Si es PHOTO_TO_ANIME, no tocamos nada.
-            // Se enviará la URL de la IA que ya está guardada en urlResultado.
-
+            // Limpiamos binarios para que no pese el JSON
+            img.setImagenBinaria(null);
+            img.setImagenOriginalBinaria(null);
             return img;
         });
     }
@@ -74,20 +75,18 @@ public class ApiImpl implements ApiService {
                             .contentType(MediaType.MULTIPART_FORM_DATA)
                             .body(BodyInserters.fromMultipartData(builder.build()))
                             .retrieve()
-                            .bodyToMono(byte[].class) // La IA nos da los bytes de la imagen limpia
+                            .bodyToMono(byte[].class)
                             .flatMap(bytesProcesados -> {
-
-                                // --- BLOQUE PARA GUARDAR EN MONGO ---
+                                // Creamos el registro con los dos binarios
                                 ApiModel registro = new ApiModel();
-                                registro.setUrlOriginal(filePart.filename());
                                 registro.setTipoServicio("BACKGROUND_REMOVER");
-                                // Guardamos los bytes en el nuevo campo que creamos en el modelo
+                                registro.setUrlOriginal(filePart.filename()); // Nombre temporal
                                 registro.setImagenBinaria(bytesProcesados);
+                                registro.setImagenOriginalBinaria(bytesOriginales);
 
-                                // Guardamos en repositorio y luego devolvemos los bytes para Postman
+                                // Guardamos y nos aseguramos de retornar los bytes procesados al terminar
                                 return repository.save(registro)
                                         .thenReturn(bytesProcesados);
-                                // ------------------------------------
                             });
                 });
     }
@@ -105,26 +104,34 @@ public class ApiImpl implements ApiService {
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
                 })
                 .flatMap(res -> {
-                    System.out.println("Respuesta completa de la IA: " + res);
-
-                    String urlAnimada = "No se pudo generar la imagen";
-
-                    if (res.containsKey("url")) {
+                    String urlAnimada = "";
+                    if (res.containsKey("url"))
                         urlAnimada = res.get("url").toString();
-                    } else if (res.containsKey("output_url")) {
+                    else if (res.containsKey("output_url"))
                         urlAnimada = res.get("output_url").toString();
-                    } else if (res.containsKey("image_url")) {
-                        urlAnimada = res.get("image_url").toString();
-                    } else if (res.containsKey("data")) {
-                        urlAnimada = res.get("data").toString();
+                    // ... (puedes dejar tus otros checks de llaves aquí)
+
+                    final String urlFinal = urlAnimada;
+
+                    // Si no hay URL, guardamos el error, si hay, DESCARGAMOS
+                    if (urlFinal.isEmpty() || urlFinal.equals("No se pudo generar la imagen")) {
+                        ApiModel errorImg = new ApiModel();
+                        errorImg.setUrlOriginal(urlOriginal);
+                        errorImg.setUrlResultado("Error");
+                        errorImg.setTipoServicio("PHOTO_TO_ANIME");
+                        return repository.save(errorImg);
                     }
 
-                    ApiModel img = new ApiModel();
-                    img.setUrlOriginal(urlOriginal);
-                    img.setUrlResultado(urlAnimada);
-                    img.setTipoServicio("PHOTO_TO_ANIME");
-
-                    return repository.save(img); // Guarda en Mongo
+                    // NUEVA LÓGICA: Descargamos la imagen de la IA y la guardamos en el binario de
+                    // Mongo
+                    return descargarImagenComoBytes(urlFinal)
+                            .flatMap(bytes -> {
+                                ApiModel img = new ApiModel();
+                                img.setUrlOriginal(urlOriginal);
+                                img.setTipoServicio("PHOTO_TO_ANIME");
+                                img.setImagenBinaria(bytes); // Guardamos la foto real en la BD
+                                return repository.save(img);
+                            });
                 });
     }
 
@@ -145,5 +152,12 @@ public class ApiImpl implements ApiService {
                     item.setActivo(false);
                     return repository.save(item);
                 });
+    }
+
+    private Mono<byte[]> descargarImagenComoBytes(String urlImagen) {
+        return webClient.get()
+                .uri(urlImagen)
+                .retrieve()
+                .bodyToMono(byte[].class); // Descarga la imagen y la vuelve bytes
     }
 }

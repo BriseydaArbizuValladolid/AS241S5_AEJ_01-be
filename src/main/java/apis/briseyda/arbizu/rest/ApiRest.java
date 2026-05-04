@@ -36,11 +36,10 @@ public class ApiRest {
         return apiService.findAll(); // Este método debe estar definido en tu Service
     }
 
-    // Este método es para que el navegador PUEDA MOSTRAR la imagen al hacer clic
-    @GetMapping(value = "/ver-imagen/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public Mono<byte[]> verImagen(@PathVariable String id) {
+    @GetMapping(value = "/ver-imagen-original/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public Mono<byte[]> verImagenOriginal(@PathVariable String id) {
         return apiService.findById(id)
-                .map(ApiModel::getImagenBinaria); // Aquí obtienes los bytes guardados
+                .map(img -> img.getImagenOriginalBinaria() != null ? img.getImagenOriginalBinaria() : new byte[0]);
     }
 
     // --- MÉTODO PARA EDITAR (UPDATE) ---
