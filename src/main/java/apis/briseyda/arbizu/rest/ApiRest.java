@@ -42,4 +42,18 @@ public class ApiRest {
         return apiService.findById(id)
                 .map(ApiModel::getImagenBinaria); // Aquí obtienes los bytes guardados
     }
+
+    // --- MÉTODO PARA EDITAR (UPDATE) ---
+    @PutMapping("/actualizar/{id}")
+    public Mono<ApiModel> actualizar(@PathVariable String id, @RequestBody ApiModel data) {
+        return apiService.update(id, data);
+    }
+
+    // --- MÉTODO PARA ELIMINADO LÓGICO (DELETE) ---
+    // Usamos DELETE porque es la semántica de la acción,
+    // pero el Service se encargará de que solo cambie el estado.
+    @DeleteMapping("/eliminar/{id}")
+    public Mono<ApiModel> deleteLogico(@PathVariable String id) {
+        return apiService.deleteLogico(id);
+    }
 }
