@@ -3,11 +3,18 @@ package apis.briseyda.arbizu.rest;
 import apis.briseyda.arbizu.model.ApiModel;
 import apis.briseyda.arbizu.service.ApiService;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URI;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux; // Importante para devolver listas reactivas
+
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/v1/ia")
@@ -15,6 +22,7 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ApiRest {
 
+    @Autowired
     private final ApiService apiService;
 
     // --- MÉTODOS EXISTENTES ---
@@ -36,6 +44,25 @@ public class ApiRest {
         return apiService.findAll(); // Este método debe estar definido en tu Service
     }
 
+    @GetMapping(value = "/ver-imagen/{id}")
+    public Mono<ResponseEntity<byte[]>> verImagen(@PathVariable String id) {
+        return apiService.findById(id)
+            .map(img -> {
+                byte[] bytes = img.getImagenBinaria();
+                
+                // Si no hay imagen, devolvemos 404 de inmediato
+                if (bytes == null || bytes.length == 0) {
+                    return ResponseEntity.notFound().<byte[]>build();
+                }
+
+                // Si hay imagen, la enviamos con el header correcto
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
+                    .body(bytes);
+            })
+            // Si el ID ni siquiera existe en la DB, devolvemos 404
+            .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
     @GetMapping(value = "/ver-imagen-original/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public Mono<byte[]> verImagenOriginal(@PathVariable String id) {
         return apiService.findById(id)
@@ -43,27 +70,40 @@ public class ApiRest {
     }
 
     // --- MÉTODO PARA EDITAR (UPDATE) ---
+    // --- EDITAR ---
     @PutMapping("/editar/{id}")
     public Mono<ApiModel> editar(@PathVariable String id, @RequestBody ApiModel registroActualizado) {
         return apiService.findById(id)
                 .flatMap(itemExistente -> {
-                    // Actualizamos los campos que vienen del frontend
+                    // Actualizamos URL
                     itemExistente.setUrlOriginal(registroActualizado.getUrlOriginal());
-                    itemExistente.setTipoServicio(registroActualizado.getTipoServicio());
-                    // Si quieres "restaurarlo" al editar, podrías limpiar el _ELIMINADO aquí
+
+                    // Validación de Tipo de Servicio
+                    String nuevoTipo = registroActualizado.getTipoServicio();
+                    if ("BACKGROUND_REMOVER".equals(nuevoTipo) || "PHOTO_TO_ANIME".equals(nuevoTipo)) {
+                        itemExistente.setTipoServicio(nuevoTipo);
+                    }
+
                     return apiService.save(itemExistente);
                 });
     }
 
-    // --- MÉTODO PARA ELIMINADO LÓGICO (DELETE) ---
+    // --- ELIMINADO LÓGICO ---
     @PatchMapping("/eliminar/{id}")
     public Mono<ApiModel> eliminar(@PathVariable String id) {
         return apiService.findById(id)
                 .flatMap(existente -> {
-                    // Si el servicio no termina en _ELIMINADO, se lo agregamos
-                    if (!existente.getTipoServicio().endsWith("_ELIMINADO")) {
-                        existente.setTipoServicio(existente.getTipoServicio() + "_ELIMINADO");
-                    }
+                    existente.setActivo(false); // Cambia de true a false
+                    return apiService.save(existente);
+                });
+    }
+
+    // --- RESTAURAR ---
+    @PatchMapping("/restaurar/{id}")
+    public Mono<ApiModel> restaurar(@PathVariable String id) {
+        return apiService.findById(id)
+                .flatMap(existente -> {
+                    existente.setActivo(true); // Cambia de false a true
                     return apiService.save(existente);
                 });
     }

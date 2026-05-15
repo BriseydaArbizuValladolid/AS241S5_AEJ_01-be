@@ -43,6 +43,10 @@ public class ApiImpl implements ApiService {
 
             img.setImagenBinaria(null);
             img.setImagenOriginalBinaria(null);
+            if (img.getActivo() == null) {
+            img.setActivo(true);
+        }
+            img.setActivo(true);
             return img;
         });
     }
@@ -82,9 +86,15 @@ public class ApiImpl implements ApiService {
                                 // Aquí guardamos los bytes para que existan en la BD
                                 registro.setImagenBinaria(bytesProcesados);
                                 registro.setImagenOriginalBinaria(bytesOriginales);
+                                registro.setActivo(true);
+                                System.out.println("ID: " + registro.getId() + " - ACTIVO: " + registro.getActivo());
 
                                 // Guardamos y retornamos los bytes para que la web no de error
                                 return repository.save(registro)
+                                        .map(guardado -> {
+                                            guardado.setActivo(true);
+                                            return bytesProcesados; 
+                                        })
                                         .thenReturn(bytesProcesados);
                             });
                 });
@@ -118,6 +128,7 @@ public class ApiImpl implements ApiService {
                         errorImg.setUrlOriginal(urlOriginal);
                         errorImg.setUrlResultado("Error");
                         errorImg.setTipoServicio("PHOTO_TO_ANIME");
+                        errorImg.setActivo(true);
                         return repository.save(errorImg);
                     }
 
