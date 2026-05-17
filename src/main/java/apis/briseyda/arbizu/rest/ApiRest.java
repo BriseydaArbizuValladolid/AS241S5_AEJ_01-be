@@ -4,8 +4,6 @@ import apis.briseyda.arbizu.model.ApiModel;
 import apis.briseyda.arbizu.service.ApiService;
 import lombok.RequiredArgsConstructor;
 
-import java.net.URI;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

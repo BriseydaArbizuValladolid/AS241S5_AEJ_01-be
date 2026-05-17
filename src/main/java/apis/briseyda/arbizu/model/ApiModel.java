@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,10 +25,11 @@ public class ApiModel {
     private LocalDateTime fechaCreacion = LocalDateTime.now();
     
     @JsonProperty("activo")
-    private Boolean activo = true;
+    @Field("activo")
+    private Boolean activo;
 
     // Getter manual para asegurar que Jackson lo vea siempre
     public Boolean getActivo() {
-        return activo;
+        return activo == null ? true : activo;
     }
 }

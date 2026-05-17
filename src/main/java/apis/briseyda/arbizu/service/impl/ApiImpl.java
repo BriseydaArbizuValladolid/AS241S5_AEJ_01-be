@@ -13,13 +13,21 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux; // Importado para el listado
 import reactor.core.publisher.Mono;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 @Service
 public class ApiImpl implements ApiService {
 
+    @Autowired
+    private ReactiveMongoTemplate mongoTemplate;
     private final WebClient webClient;
     private final ApiRepository repository;
 
@@ -44,9 +52,8 @@ public class ApiImpl implements ApiService {
             img.setImagenBinaria(null);
             img.setImagenOriginalBinaria(null);
             if (img.getActivo() == null) {
-            img.setActivo(true);
-        }
-            img.setActivo(true);
+                img.setActivo(true);
+            }
             return img;
         });
     }
@@ -93,14 +100,13 @@ public class ApiImpl implements ApiService {
                                 return repository.save(registro)
                                         .map(guardado -> {
                                             guardado.setActivo(true);
-                                            return bytesProcesados; 
+                                            return bytesProcesados;
                                         })
                                         .thenReturn(bytesProcesados);
                             });
                 });
     }
 
-    // --- MÉTODO PARA CONVERTIR A ANIME ---
     // --- MÉTODO PARA CONVERTIR A ANIME ---
     @Override
     public Mono<ApiModel> convertirAnime(String urlOriginal) {
@@ -111,7 +117,8 @@ public class ApiImpl implements ApiService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData("image_url", urlOriginal))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
                 .flatMap(res -> {
                     String urlAnimada = "";
 
@@ -150,7 +157,8 @@ public class ApiImpl implements ApiService {
                                 img.setActivo(true);
                                 return repository.save(img);
                             })
-                            // Si la descarga falla por seguridad de la URL de la IA, guardamos la URL como texto alternativo
+                            // Si la descarga falla por seguridad de la URL de la IA, guardamos la URL como
+                            // texto alternativo
                             .onErrorResume(err -> {
                                 ApiModel fallbackImg = new ApiModel();
                                 fallbackImg.setUrlOriginal(urlOriginal);
@@ -166,20 +174,46 @@ public class ApiImpl implements ApiService {
     public Mono<ApiModel> update(String id, ApiModel apiModel) {
         return repository.findById(id)
                 .flatMap(existing -> {
-                    existing.setTipoServicio(apiModel.getTipoServicio());
-                    // actualiza otros campos si es necesario
+                    // CORRECCIÓN: Ahora actualiza TODOS los campos importantes que mande el
+                    // frontend
+                    if (apiModel.getTipoServicio() != null)
+                        existing.setTipoServicio(apiModel.getTipoServicio());
+                    if (apiModel.getActivo() != null)
+                        existing.setActivo(apiModel.getActivo());
+                    if (apiModel.getUrlResultado() != null)
+                        existing.setUrlResultado(apiModel.getUrlResultado());
+
+                    System.out.println("====== [BACKEND] Editando registro ID " + id + " (Activo: "
+                            + existing.getActivo() + ") ======");
                     return repository.save(existing);
-                });
+                })
+                // Forzamos la persistencia en el flujo reactivo antes de responder
+                .flatMap(itemGuardado -> repository.findById(itemGuardado.getId()));
     }
 
-    @Override
-    public Mono<ApiModel> deleteLogico(String id) {
-        return repository.findById(id)
-                .flatMap(item -> {
-                    item.setActivo(false);
-                    return repository.save(item);
-                });
-    }
+@Override
+public Mono<ApiModel> deleteLogico(String id) {
+    // 1. Creamos la condición de búsqueda por ID
+    Query query = new Query(Criteria.where("id").is(id));
+
+    // 2. Definimos qué campo queremos modificar textualmente en MongoDB
+    Update update = new Update().set("activo", false);
+
+    // 3. Ejecutamos el update directo en la base de datos y luego recuperamos el objeto actualizado
+    return mongoTemplate.updateFirst(query, update, ApiModel.class)
+            .flatMap(updateResult -> {
+                System.out.println("Documentos modificados en MongoDB: " + updateResult.getModifiedCount());
+                return repository.findById(id); // Devolvemos el registro real desde la BD para Postman
+            });
+}
+
+public Mono<ApiModel> restoreRecord(String id) {
+    Query query = new Query(Criteria.where("id").is(id));
+    Update update = new Update().set("activo", true);
+
+    return mongoTemplate.updateFirst(query, update, ApiModel.class)
+            .flatMap(updateResult -> repository.findById(id));
+}
 
     private Mono<byte[]> descargarImagenComoBytes(String urlImagen) {
         return webClient.get()
