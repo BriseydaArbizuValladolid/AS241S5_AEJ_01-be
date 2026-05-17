@@ -101,6 +101,7 @@ public class ApiImpl implements ApiService {
     }
 
     // --- MÉTODO PARA CONVERTIR A ANIME ---
+    // --- MÉTODO PARA CONVERTIR A ANIME ---
     @Override
     public Mono<ApiModel> convertirAnime(String urlOriginal) {
         return webClient.post()
@@ -110,20 +111,27 @@ public class ApiImpl implements ApiService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData("image_url", urlOriginal))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
-                })
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .flatMap(res -> {
                     String urlAnimada = "";
-                    if (res.containsKey("url"))
+
+                    if (res.containsKey("data") && res.get("data") instanceof Map) {
+                        Map<?, ?> data = (Map<?, ?>) res.get("data");
+                        if (data.containsKey("image_url")) {
+                            urlAnimada = data.get("image_url").toString();
+                        }
+                    } else if (res.containsKey("image_url")) {
+                        urlAnimada = res.get("image_url").toString();
+                    } else if (res.containsKey("url")) {
                         urlAnimada = res.get("url").toString();
-                    else if (res.containsKey("output_url"))
+                    } else if (res.containsKey("output_url")) {
                         urlAnimada = res.get("output_url").toString();
-                    // ... (puedes dejar tus otros checks de llaves aquí)
+                    }
 
                     final String urlFinal = urlAnimada;
 
-                    // Si no hay URL, guardamos el error, si hay, DESCARGAMOS
-                    if (urlFinal.isEmpty() || urlFinal.equals("No se pudo generar la imagen")) {
+                    // Manejo del error si la API externa no devolvió ninguna ruta válida
+                    if (urlFinal == null || urlFinal.isEmpty() || urlFinal.equals("No se pudo generar la imagen")) {
                         ApiModel errorImg = new ApiModel();
                         errorImg.setUrlOriginal(urlOriginal);
                         errorImg.setUrlResultado("Error");
@@ -132,15 +140,24 @@ public class ApiImpl implements ApiService {
                         return repository.save(errorImg);
                     }
 
-                    // NUEVA LÓGICA: Descargamos la imagen de la IA y la guardamos en el binario de
-                    // Mongo
+                    // Descargamos la imagen generada por la IA y la metemos a MongoDB
                     return descargarImagenComoBytes(urlFinal)
                             .flatMap(bytes -> {
                                 ApiModel img = new ApiModel();
                                 img.setUrlOriginal(urlOriginal);
                                 img.setTipoServicio("PHOTO_TO_ANIME");
-                                img.setImagenBinaria(bytes); // Guardamos la foto real en la BD
+                                img.setImagenBinaria(bytes); // Los bytes de anime ya están listos
+                                img.setActivo(true);
                                 return repository.save(img);
+                            })
+                            // Si la descarga falla por seguridad de la URL de la IA, guardamos la URL como texto alternativo
+                            .onErrorResume(err -> {
+                                ApiModel fallbackImg = new ApiModel();
+                                fallbackImg.setUrlOriginal(urlOriginal);
+                                fallbackImg.setUrlResultado(urlFinal);
+                                fallbackImg.setTipoServicio("PHOTO_TO_ANIME");
+                                fallbackImg.setActivo(true);
+                                return repository.save(fallbackImg);
                             });
                 });
     }

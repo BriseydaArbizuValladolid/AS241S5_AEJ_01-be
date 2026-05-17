@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: briseyda-arbizu-01-container
-        image: briseydaarbizu/ia-image-processor:1.4   # Reemplaza con tu imagen Docker Hub
+        image: briseydaarbizu/ia-image-processor:1.6   # Reemplaza con tu imagen Docker Hub
         imagePullPolicy: IfNotPresent        # Evitar traer siempre la última versión si hay una actual
         envFrom:
         - secretRef:
