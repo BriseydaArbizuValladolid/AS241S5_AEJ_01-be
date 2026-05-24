@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           #dockerfile: Dockerfile   # Dockerfile en la raíz del proyecto
-          file: ./dockerfile-briseyda/Dockerfile        # Dockerfile en la carpeta dockerfile-juan
+          file: ./Dockerfile        # Dockerfile en la carpeta dockerfile-juan
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME_BRISEYDA }}/as241s5_aej_00-be:latest
