@@ -1,0 +1,31 @@
+# .trivyignore
+# CVEs de Netty sin backport a la rama 4.1.x.
+# El proyecto usa io.netty 4.1.133.Final, la última versión de la rama 4.1.x.
+# Los CVEs listados aquí SOLO tienen fix en la rama 4.2.x de Netty.
+# No existe ninguna versión 4.1.x que los corrija; el fix requiere que
+# Spring Boot actualice su BOM para gestionar Netty 4.2.x.
+# Fecha de revisión: 2026-05-25
+
+# CVE-2026-42578 — CONNECT proxy header injection (fix: 4.2.x only)
+CVE-2026-42578
+
+# CVE-2026-42579 — DNS codec no valida RFC 1035 (fix: 4.2.13.Final only)
+CVE-2026-42579
+
+# CVE-2026-42580 — chunk size parser int overflow / request smuggling (fix: 4.2.13.Final only)
+CVE-2026-42580
+
+# CVE-2026-42581 — HTTP/1.0 Content-Length + Transfer-Encoding smuggling (fix: 4.2.x only)
+CVE-2026-42581
+
+# CVE-2026-42583 — Lz4FrameDecoder DoS pre-allocation (fix: 4.2.13.Final only)
+CVE-2026-42583
+
+# CVE-2026-42585 — malformed Transfer-Encoding request smuggling (fix: 4.2.13.Final only)
+CVE-2026-42585
+
+# CVE-2026-42587 — decompression DoS via Content-Encoding: br bypass (fix: 4.2.13.Final only)
+CVE-2026-42587
+
+# CVE-2026-41417 — setUri() CRLF injection bypass (fix: 4.2.13.Final only)
+CVE-2026-41417

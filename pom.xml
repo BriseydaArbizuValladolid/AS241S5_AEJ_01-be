@@ -32,13 +32,12 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Override Netty BOM: CVE-2026-33870, CVE-2026-33871, CVE-2026-42581
-			     fixed en 4.1.132.Final. Debe ir ANTES del spring-boot-dependencies BOM
-			     para que tome precedencia sobre la versión gestionada por Spring Boot. -->
+			<!-- Override Netty BOM: CVE-2026-33870, CVE-2026-33871, CVE-2026-42581,
+			     CVE-2026-42584, CVE-2026-44248 fixed en 4.1.133.Final -->
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
