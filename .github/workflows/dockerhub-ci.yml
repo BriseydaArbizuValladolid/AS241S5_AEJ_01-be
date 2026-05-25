@@ -37,5 +37,5 @@ jobs:
           file: ./Dockerfile        # Dockerfile en la carpeta dockerfile-juan
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME_BRISEYDA }}/as241s5_aej_00-be:latest
-            ${{ secrets.DOCKERHUB_USERNAME_BRISEYDA }}/as241s5_aej_00-be:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME_BRISEYDA }}/as241s5_aej_01-be:latest
+            ${{ secrets.DOCKERHUB_USERNAME_BRISEYDA }}/as241s5_aej_01-be:${{ github.sha }}
