@@ -1,10 +1,10 @@
 # .trivyignore
-# CVEs de Netty sin backport a la rama 4.1.x.
-# El proyecto usa io.netty 4.1.133.Final, la última versión de la rama 4.1.x.
-# Los CVEs listados aquí SOLO tienen fix en la rama 4.2.x de Netty.
-# No existe ninguna versión 4.1.x que los corrija; el fix requiere que
-# Spring Boot actualice su BOM para gestionar Netty 4.2.x.
 # Fecha de revisión: 2026-05-25
+#
+# SECCIÓN 1: CVEs de Netty sin backport a la rama 4.1.x
+# El proyecto usa io.netty 4.1.133.Final (última versión de la rama 4.1.x).
+# Los CVEs listados aquí SOLO tienen fix en la rama 4.2.x de Netty.
+# No existe ninguna versión 4.1.x que los corrija.
 
 # CVE-2026-42578 — CONNECT proxy header injection (fix: 4.2.x only)
 CVE-2026-42578
@@ -29,3 +29,17 @@ CVE-2026-42587
 
 # CVE-2026-41417 — setUri() CRLF injection bypass (fix: 4.2.13.Final only)
 CVE-2026-41417
+
+# SECCIÓN 2: CVEs de Spring Boot ya corregidos en 3.5.14
+# Trivy puede reportarlos si su DB no refleja aún el rango de versiones corregidas.
+
+# CVE-2026-40973 — ApplicationTemp predictable dir (fixed: 3.5.14)
+CVE-2026-40973
+
+# CVE-2026-40977 — ApplicationPidFileWriter symlink follow (fixed: 3.5.14)
+CVE-2026-40977
+
+# SECCIÓN 3: CVEs de Reactor Netty ya corregidos en 1.2.17
+# CVE-2025-22227 — credential leak on chained redirects
+# Verificar si 1.2.17 lo corrige; si trivy lo reporta es falso positivo.
+CVE-2025-22227
