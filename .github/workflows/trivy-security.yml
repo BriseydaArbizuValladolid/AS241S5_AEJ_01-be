@@ -1,0 +1,65 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+  schedule:
+    # Ejecutar todos los días a las 8:00 AM hora Perú (UTC-5) → 1:00 PM UTC
+    - cron: '0 13 * * *'
+  workflow_dispatch:  # Permite ejecución manual desde GitHub Actions UI
+
+jobs:
+
+  trivy-security:
+    name: Trivy Filesystem Scan
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Build Project
+        run: mvn clean package -DskipTests
+
+      # =========================================================
+      # INSTALL TRIVY
+      # =========================================================
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+            gpg --dearmor | \
+            sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | \
+            sudo tee /etc/apt/sources.list.d/trivy.list
+
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      # =========================================================
+      # RUN TRIVY
+      # =========================================================
+      - name: Run Trivy Filesystem Scan
+        run: |
+          trivy fs . \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0
+
+      - name: Pipeline Finished
+        run: echo "Trivy scan completed successfully"
