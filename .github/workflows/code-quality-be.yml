@@ -1,0 +1,35 @@
+name: Backend Code Quality and Testing
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+  workflow_dispatch: # Permite ejecutarlo manualmente
+
+jobs:
+  backend-verification:
+    name: Run Tests and Checkstyle
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código del backend
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Configurar el entorno de Java 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      # 3. EJECUTAR PRUEBAS: Verifica que la lógica del negocio funcione bien
+      - name: Run Unit Tests
+        run: mvn test
+
+      # 4. REVISAR CALIDAD: Ejecuta el validador de estilo de código de Maven
+      # (Si tu proyecto no tiene checkstyle configurado, este comando igual validará que compile limpiamente)
+      - name: Verify Code Style & Quality
+        run: mvn compile checkstyle:check
