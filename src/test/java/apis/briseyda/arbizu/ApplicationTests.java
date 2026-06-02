@@ -1,15 +1,14 @@
 package apis.briseyda.arbizu;
 
+import apis.briseyda.arbizu.repository.ApiRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(properties = {
-    "spring.data.mongodb.uri=", 
-    "spring.data.mongodb.host=", 
-    "spring.data.mongodb.port="
-})
+@SpringBootTest
 class ApplicationTests {
-
+    @MockBean
+    private ApiRepository apiRepository;
 	@Test
 	void contextLoads() {
 	}
