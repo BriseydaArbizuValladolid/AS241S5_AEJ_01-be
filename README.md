@@ -1,4 +1,4 @@
-# AS241S5_AEJ_01-be
+# AS241S5_AEJ_01-be ..
 # AI Image Transformation Services con Spring Boot
 
 Servicios Cognitivos de Rapid API: **AI Background Remover** y **PhotoToAnime**. Estos modelos permiten procesar imágenes mediante visión artificial para eliminar fondos y transformar fotografías en arte estilo anime. El sistema consume estas APIs de forma reactiva, captura los resultados (URLs de las imágenes procesadas) y las almacena automáticamente en una base de datos **MongoDB Atlas** (NoSQL Cloud).
