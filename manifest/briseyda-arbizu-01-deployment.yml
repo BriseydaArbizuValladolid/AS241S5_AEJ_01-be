@@ -5,7 +5,7 @@ metadata:
   name: briseyda-arbizu-01-deployment
   namespace: briseyda-arbizu-01-namespace
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: briseyda-arbizu-01-deployment        # Debe coincidir con las etiquetas del Service
